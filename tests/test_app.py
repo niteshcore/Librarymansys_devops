@@ -1,4 +1,3 @@
-"""Unit tests for the Library Management System. Run with: pytest -v"""
 import pytest
 
 from app import create_app
@@ -6,22 +5,17 @@ from app import create_app
 
 @pytest.fixture
 def client(tmp_path):
-    # A fixture runs before each test; every test gets a fresh, empty database
-    # inside a temporary folder, so tests never touch real data or each other
+    # Each test gets a fresh database in a temporary folder, so tests never touch real data
     app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
-    # The test client lets us send requests without starting a real server
     return app.test_client()
 
 
 def add_sample_book(client, title="Clean Code", author="Robert Martin", isbn="111", copies=2):
-    # Helper used by many tests to quickly add a book through the API
     return client.post(
         "/api/books",
         json={"title": title, "author": author, "isbn": isbn, "copies": copies},
     )
 
-
-# ---------- Health ----------
 
 def test_health_returns_ok(client):
     response = client.get("/health")
@@ -29,14 +23,11 @@ def test_health_returns_ok(client):
     assert response.get_json() == {"status": "ok"}
 
 
-# ---------- Add / list / get ----------
-
 def test_add_book(client):
     response = add_sample_book(client)
     assert response.status_code == 201
     book = response.get_json()
     assert book["title"] == "Clean Code"
-    # A new book starts with all copies available
     assert book["total_copies"] == 2
     assert book["available_copies"] == 2
 
@@ -56,25 +47,18 @@ def test_get_single_book(client):
     assert response.get_json()["isbn"] == "111"
 
 
-# ---------- Search ----------
-
 def test_search_by_title_and_author(client):
     add_sample_book(client, title="Clean Code", author="Robert Martin", isbn="111")
     add_sample_book(client, title="Dune", author="Frank Herbert", isbn="222")
 
-    # Search by part of the title (case does not matter)
     by_title = client.get("/api/books?q=dune").get_json()
     assert [b["title"] for b in by_title] == ["Dune"]
 
-    # Search by part of the author's name
     by_author = client.get("/api/books?q=martin").get_json()
     assert [b["title"] for b in by_author] == ["Clean Code"]
 
-    # No match returns an empty list
     assert client.get("/api/books?q=harry").get_json() == []
 
-
-# ---------- Issue / return ----------
 
 def test_issue_book_reduces_available_copies(client):
     book_id = add_sample_book(client, copies=2).get_json()["id"]
@@ -86,7 +70,6 @@ def test_issue_book_reduces_available_copies(client):
 def test_cannot_issue_when_no_copies_left(client):
     book_id = add_sample_book(client, copies=1).get_json()["id"]
     client.post(f"/api/books/{book_id}/issue")
-    # Second issue must fail because the only copy is already out
     response = client.post(f"/api/books/{book_id}/issue")
     assert response.status_code == 400
     assert client.get(f"/api/books/{book_id}").get_json()["available_copies"] == 0
@@ -102,23 +85,17 @@ def test_return_book_increases_available_copies(client):
 
 def test_cannot_return_when_all_copies_in_library(client):
     book_id = add_sample_book(client, copies=2).get_json()["id"]
-    # Nothing was issued, so a return makes no sense
     response = client.post(f"/api/books/{book_id}/return")
     assert response.status_code == 400
     assert client.get(f"/api/books/{book_id}").get_json()["available_copies"] == 2
 
 
-# ---------- Delete ----------
-
 def test_delete_book(client):
     book_id = add_sample_book(client).get_json()["id"]
     response = client.delete(f"/api/books/{book_id}")
     assert response.status_code == 200
-    # The book should now be gone
     assert client.get(f"/api/books/{book_id}").status_code == 404
 
-
-# ---------- Invalid input ----------
 
 def test_add_book_with_missing_fields_fails(client):
     response = client.post("/api/books", json={"author": "Someone", "isbn": "999"})
@@ -134,7 +111,6 @@ def test_add_book_with_invalid_copies_fails(client):
 def test_add_book_with_duplicate_isbn_fails(client):
     add_sample_book(client, isbn="111")
     response = add_sample_book(client, title="Another Book", isbn="111")
-    # 409 = Conflict: the ISBN already exists
     assert response.status_code == 409
 
 
@@ -144,14 +120,11 @@ def test_add_book_with_non_json_body_fails(client):
 
 
 def test_unknown_book_returns_404(client):
-    # Every route that takes a book id should say "not found" for a missing book
     assert client.get("/api/books/999").status_code == 404
     assert client.post("/api/books/999/issue").status_code == 404
     assert client.post("/api/books/999/return").status_code == 404
     assert client.delete("/api/books/999").status_code == 404
 
-
-# ---------- HTML pages ----------
 
 def test_home_page_lists_books(client):
     add_sample_book(client)
@@ -163,7 +136,6 @@ def test_home_page_lists_books(client):
 
 def test_add_book_through_html_form(client):
     assert client.get("/add").status_code == 200
-    # follow_redirects=True follows the redirect back to the home page
     response = client.post(
         "/add",
         data={"title": "Dune", "author": "Frank Herbert", "isbn": "222", "copies": "3"},
@@ -172,7 +144,6 @@ def test_add_book_through_html_form(client):
     assert response.status_code == 200
     assert b"Dune" in response.data
 
-    # Submitting the form with a missing title should be rejected
     bad = client.post("/add", data={"title": "", "author": "X", "isbn": "333", "copies": "1"})
     assert bad.status_code == 400
 

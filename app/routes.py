@@ -1,14 +1,12 @@
-"""URL routes: HTML pages for people, and a JSON API under /api for tests and tools."""
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from . import models
 
-# A Blueprint is a group of routes; it is registered in create_app()
 bp = Blueprint("main", __name__)
 
 
 def validate_book(data):
-    """Check book fields. Returns (clean_data, None) if valid, or (None, error_message)."""
+    """Returns (clean_data, None) if valid, or (None, error_message)."""
     title = str(data.get("title") or "").strip()
     author = str(data.get("author") or "").strip()
     isbn = str(data.get("isbn") or "").strip()
@@ -16,7 +14,6 @@ def validate_book(data):
     if not title or not author or not isbn:
         return None, "Title, author and ISBN are required."
 
-    # Copies must be a whole number, at least 1 (default 1 if not given)
     try:
         copies = int(data.get("copies", 1))
     except (TypeError, ValueError):
@@ -27,11 +24,9 @@ def validate_book(data):
     return {"title": title, "author": author, "isbn": isbn, "copies": copies}, None
 
 
-# ---------- Health check ----------
-
 @bp.route("/health")
 def health():
-    # Docker and the CI/CD pipeline call this to check the app is running
+    # Used by Docker's healthcheck and the pipeline's smoke test
     return jsonify(status="ok")
 
 
@@ -39,7 +34,6 @@ def health():
 
 @bp.route("/")
 def index():
-    # Home page: list all books; ?q=... in the URL filters by title or author
     query = request.args.get("q", "").strip()
     books = models.get_books(query)
     return render_template("index.html", books=books, query=query)
@@ -47,7 +41,6 @@ def index():
 
 @bp.route("/add", methods=["GET", "POST"])
 def add_book_page():
-    # GET shows the empty form, POST saves the submitted book
     if request.method == "POST":
         book, error = validate_book(request.form)
         if error:
@@ -57,7 +50,7 @@ def add_book_page():
             flash("A book with this ISBN already exists.", "error")
             return render_template("add.html", form=request.form), 409
         flash(f"Added '{book['title']}'.", "success")
-        # Redirect after POST so refreshing the page does not add the book twice
+        # Redirect after POST, so refreshing the page does not add the book twice
         return redirect(url_for("main.index"))
     return render_template("add.html", form={})
 
@@ -93,7 +86,6 @@ def delete_book_page(book_id):
 
 @bp.route("/api/books", methods=["GET"])
 def api_list_books():
-    # GET /api/books or /api/books?q=python
     query = request.args.get("q", "").strip()
     return jsonify(models.get_books(query))
 
@@ -108,7 +100,7 @@ def api_get_book(book_id):
 
 @bp.route("/api/books", methods=["POST"])
 def api_add_book():
-    # silent=True returns None (instead of crashing) if the body is not valid JSON
+    # silent=True returns None instead of raising an error for invalid JSON
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify(error="Request body must be a JSON object"), 400
@@ -118,7 +110,6 @@ def api_add_book():
     book_id = models.add_book(**book)
     if book_id is None:
         return jsonify(error="A book with this ISBN already exists"), 409
-    # 201 = "Created"
     return jsonify(models.get_book(book_id)), 201
 
 
