@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Add Book{% endblock %}
+
+{% block content %}
+<h2>Add a new book</h2>
+{# "form" holds what the user typed, so the fields refill if there was an error #}
+<form class="card" method="post" action="{{ url_for('main.add_book_page') }}">
+  <label>Title
+    <input name="title" value="{{ form.get('title', '') }}" required>
+  </label>
+  <label>Author
+    <input name="author" value="{{ form.get('author', '') }}" required>
+  </label>
+  <label>ISBN
+    <input name="isbn" value="{{ form.get('isbn', '') }}" required>
+  </label>
+  <label>Number of copies
+    <input type="number" name="copies" min="1" value="{{ form.get('copies', 1) }}" required>
+  </label>
+  <button type="submit">Add Book</button>
+</form>
+{% endblock %}

@@ -1,0 +1,22 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Virtual environment (each developer creates their own)
+.venv/
+venv/
+
+# SQLite database files (real data should never be committed)
+data/
+*.db
+
+# Test cache
+.pytest_cache/
+
+# Secrets / local environment variables
+.env
+
+# macOS / editor files
+.DS_Store
+.vscode/
+.idea/

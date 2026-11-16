@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Books{% endblock %}
+
+{% block content %}
+{# Search form sends ?q=... back to this same page #}
+<form class="search" method="get" action="{{ url_for('main.index') }}">
+  <input type="text" name="q" value="{{ query }}" placeholder="Search by title or author">
+  <button type="submit">Search</button>
+  {% if query %}<a href="{{ url_for('main.index') }}">Clear</a>{% endif %}
+</form>
+
+{% if books %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th><th>Author</th><th>ISBN</th><th>Copies</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for book in books %}
+      <tr>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+        <td>{{ book.isbn }}</td>
+        <td>{{ book.available_copies }} / {{ book.total_copies }}</td>
+        <td>
+          {% if book.available_copies > 0 %}
+            <span class="badge ok">Available</span>
+          {% else %}
+            <span class="badge no">All issued</span>
+          {% endif %}
+        </td>
+        <td class="actions">
+          {# Actions use POST forms because they change data #}
+          <form method="post" action="{{ url_for('main.issue_book_page', book_id=book.id) }}">
+            <button {% if book.available_copies == 0 %}disabled{% endif %}>Issue</button>
+          </form>
+          <form method="post" action="{{ url_for('main.return_book_page', book_id=book.id) }}">
+            <button {% if book.available_copies == book.total_copies %}disabled{% endif %}>Return</button>
+          </form>
+          <form method="post" action="{{ url_for('main.delete_book_page', book_id=book.id) }}"
+                onsubmit="return confirm('Delete this book?');">
+            <button class="danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% elif query %}
+  <p class="card">No books match "{{ query }}".</p>
+{% else %}
+  <p class="card">No books yet. <a href="{{ url_for('main.add_book_page') }}">Add the first one</a>.</p>
+{% endif %}
+{% endblock %}
