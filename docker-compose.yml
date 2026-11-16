@@ -1,0 +1,29 @@
+services:
+  web:
+    # Build the image using the Dockerfile in this folder
+    build: .
+    # Name given to the built image
+    image: library-devops:latest
+    container_name: library-app
+    # "host port : container port" -> open http://localhost:5000
+    ports:
+      - "5000:5000"
+    environment:
+      # SQLite file lives inside the volume mounted below
+      DATABASE_PATH: /app/data/library.db
+    volumes:
+      # Named volume: the database survives container restarts and re-creation
+      - library-data:/app/data
+    # Restart automatically after a crash or reboot, unless we stopped it ourselves
+    restart: unless-stopped
+    healthcheck:
+      # Call /health from inside the container (Python is already installed, curl is not)
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s     # check every 30 seconds
+      timeout: 5s       # fail the check if no answer in 5 seconds
+      retries: 3        # mark "unhealthy" after 3 failures in a row
+      start_period: 10s # give the app 10 seconds to start before checking
+
+# Declare the named volume used above
+volumes:
+  library-data:

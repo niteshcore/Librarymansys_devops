@@ -1,0 +1,11 @@
+# Ignore everything by default...
+*
+
+# ...then allow only the files the app needs to run
+!app
+!run.py
+!requirements.txt
+
+# Never copy Python cache files, even from inside app/
+**/__pycache__
+**/*.pyc
