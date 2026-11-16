@@ -194,17 +194,29 @@ Credentials are never stored in the code. They are saved in GitHub under **Setti
 
 ## Screenshots
 
-> **Screenshot:** Home page with the book list and status badges (`docs/screenshots/home.png`)
+**Home page:** all books with their availability status and the Issue / Return / Delete buttons
 
-> **Screenshot:** Add Book form (`docs/screenshots/add-book.png`)
+![Home page](docs/screenshots/home.png)
 
-> **Screenshot:** `pytest -v` output with all 18 tests passing (`docs/screenshots/tests.png`)
+**Add Book form**
 
-> **Screenshot:** `docker compose ps` showing the container as healthy (`docs/screenshots/docker-healthy.png`)
+![Add Book form](docs/screenshots/add-book.png)
 
-> **Screenshot:** GitHub Actions run with all three jobs green (`docs/screenshots/pipeline-green.png`)
+**Unit tests:** all 18 pytest tests passing
 
-> **Screenshot:** Docker Hub repository with the `latest` and commit SHA tags (`docs/screenshots/docker-hub.png`)
+![pytest output](docs/screenshots/tests.png)
+
+**Docker:** the container is running and Docker reports it as healthy
+
+![docker compose ps](docs/screenshots/docker-healthy.png)
+
+**GitHub Actions:** test → build-and-push → deploy, all green
+
+![Pipeline run](docs/screenshots/pipeline-green.png)
+
+**Docker Hub:** the pipeline pushed the image with the `latest` and commit SHA tags, for both amd64 and arm64
+
+![Docker Hub tags](docs/screenshots/docker-hub.png)
 
 ---
 
