@@ -2,8 +2,8 @@ services:
   web:
     # Build the image using the Dockerfile in this folder
     build: .
-    # Name given to the built image
-    image: library-devops:latest
+    # Image name: used when building locally, and pulled from Docker Hub when deploying
+    image: niteshcore/library-devops:latest
     container_name: library-app
     # "host port : container port" -> open http://localhost:5000
     ports:
