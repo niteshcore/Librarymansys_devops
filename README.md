@@ -224,10 +224,8 @@ Credentials are never stored in the code. They are saved in GitHub under **Setti
 
 | Member | Responsibility |
 |---|---|
-| _Name_ (Leader) | GitHub repository, planning, README, final demo |
-| _Name_ | Flask application |
-| _Name_ | Unit tests |
-| _Name_ | Dockerfile and Docker Compose |
-| _Name_ | GitHub Actions CI/CD and Docker Hub |
+| Nitesh (Leader) | GitHub repository, planning, GitHub Actions CI/CD, Docker Hub, README, final demo |
+| Mohit | Flask application and unit tests |
+| Akash | Dockerfile, Docker Compose and screenshots |
 
 DevOps Capstone Project, November 2026.
