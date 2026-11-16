@@ -1,0 +1,36 @@
+# Name shown in the GitHub "Actions" tab
+name: CI/CD Pipeline
+
+# WHEN should this pipeline run?
+on:
+  push:
+    branches: [main]      # every push to the main branch
+  pull_request:
+    branches: [main]      # every pull request that targets main
+
+# WHAT should it do? A pipeline is made of jobs; each job is a list of steps.
+jobs:
+  # ---------- Job 1: CI - run the tests ----------
+  test:
+    # GitHub gives us a brand-new Ubuntu Linux computer for this job
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Download our repository's code onto that computer
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      # 2. Install Python 3.11 (the same version our Docker image uses)
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip      # remember downloaded packages so later runs are faster
+
+      # 3. Install Flask, gunicorn and pytest from requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Run all 18 tests. If any test fails, this step fails and the pipeline turns red.
+      - name: Run tests
+        run: pytest -v
